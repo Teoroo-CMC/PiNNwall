@@ -1,0 +1,77 @@
+model:
+  name: pol_local_model
+  params:
+    ewald_eta: !!python/object/apply:numpy.core.multiarray.scalar
+    - !!python/object/apply:numpy.dtype
+      args:
+      - f8
+      - false
+      - true
+      state: !!python/tuple
+      - 3
+      - <
+      - null
+      - null
+      - null
+      - -1
+      - -1
+      - 0
+    - !!binary |
+      5orSZRtjH0A=
+    ewald_kmax: 6
+    ewald_rc: !!python/object/apply:numpy.core.multiarray.scalar
+    - !!python/object/apply:numpy.dtype
+      args:
+      - f8
+      - false
+      - true
+      state: !!python/tuple
+      - 3
+      - <
+      - null
+      - null
+      - null
+      - -1
+      - -1
+      - 0
+    - !!binary |
+      p1dKVfY1PkA=
+model_dir: /home/thomas/ML_model/final_models/qm7b-nofilter-local-5E5-2
+network:
+  name: PiNetInter
+  params:
+    atom_types:
+    - 1
+    - 6
+    - 7
+    - 8
+    - 16
+    - 17
+    basis_type: gaussian
+    depth: 5
+    ii_nodes:
+    - 32
+    - 32
+    - 32
+    - 32
+    n_basis: 20
+    out_nodes:
+    - 32
+    pi_nodes:
+    - 32
+    pp_nodes:
+    - 32
+    - 32
+    - 32
+    - 32
+    rc: 4.5
+optimizer:
+  class_name: Adam
+  config:
+    global_clipnorm: 0.01
+    learning_rate:
+      class_name: ExponentialDecay
+      config:
+        decay_rate: 0.994
+        decay_steps: 10000
+        initial_learning_rate: 0.0003
