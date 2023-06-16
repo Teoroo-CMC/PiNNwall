@@ -1,0 +1,150 @@
+# System configuration
+# ====================
+
+# Global simulation parameters
+# ----------------------------
+num_steps       10000 # number of steps in the run
+timestep     41.341 # timestep (a.u)
+temperature   298.0 # temperature (K)
+
+# Periodic boundary conditions
+# ----------------------------
+num_pbc  3
+
+# Thermostat:
+# -----------
+#thermostat
+#  chain_length  5
+#  relaxation_time 4134.1
+#  tolerance  1.0e-17
+#  max_iteration  100
+
+# Species definition
+# ----------------------
+species
+
+  species_type
+    name   Na              # name of the species
+    count  20              # number of species 
+    mass   22.990          # mass in amu
+    mobile True
+    charge point 1.000     # permanent charge on the ions
+
+  species_type
+    name   Cl              # name of the species
+    count  20              # number of species 
+    mass   35.453          # mass in amu
+    mobile True
+    charge point -1.000    # permanent charge on the ions
+
+  species_type
+    name   O               # name of the species
+    count  603             # number of species
+    mass   15.996          # mass in amu
+    mobile True  
+    charge point -0.8476   # permanent charge on the ions
+
+  species_type
+    name   H1              # name of the species
+    count  603             # number of species
+    mass   1.0008          # mass in amu
+    mobile True
+    charge point 0.4238    # permanent charge on the ions
+
+  species_type
+    name   H2              # name of the species
+    count  603             # number of species 
+    mass   1.0008          # mass in amu
+    mobile True
+    charge point 0.4238    # permanent charge on the ions
+
+  species_type
+    name C1                         # name of the species
+    count 96                        # number of species 
+    mass 35.453                     # mass in amu
+    mobile False                
+    charge gaussian 0.955234657 0.0 # gaussian_width (bohr^-1) charge
+
+  species_type
+    name C2                         # name of the species
+    count 96                        # number of species 
+    mass 35.453                     # mass in amu
+    mobile False                
+    charge gaussian 0.955234657 0.0 # gaussian_width (bohr^-1) charge
+
+
+# Molecule definitions
+# --------------------
+molecules
+
+  molecule_type
+    name water       # name of molecule
+    count 603        # number of molecules
+    sites O H1 H2    # molecule's sites
+
+    # Rigid constraints
+    constraint  O H1 1.88973 # constrained radius for a pair of sites (bohr)
+    constraint  O H2 1.88973 # constrained radius for a pair of sites (bohr)
+    constraint H1 H2 3.08589 # constrained radius for a pair of sites (bohr)
+
+    constraints_algorithm rattle 1.0e-6 100
+
+# Electrode species definition
+# ----------------------------
+electrodes
+
+  electrode_type
+    name       C1             # name of electrode
+    species    C1             # name of the species
+    potential  0.000          # fixed potential (a.u.)
+
+  electrode_type
+    name       C2             # name of electrode
+    species    C2             # name of the species
+    potential  0.000          # fixed potential (a.u.)
+
+  electrode_charges matrix_inversion #cg 1.0e-15 200  # choice of algorithm for electrode charges
+  charge_neutrality true      # enforce charge neutrality
+  write_matrix true
+# Interactions definition
+# -----------------------
+interactions
+  coulomb
+    coulomb_rtol 2.0e-5    # coulomb rtol
+    coulomb_rcut 13.00     # coulomb cutoff (bohr)
+    coulomb_ktol 1.0e-7    # coulomb ktol
+
+  lennard-jones
+    lj_rcut  13.0          # lj cutoff (bohr)
+    # lj parameters: epsilon in kJ/mol, sigma in angstrom
+    lj_pair O  O  0.650200 3.166000
+    lj_pair O  Na 0.521578 2.876500
+    lj_pair O  Cl 0.521578 3.783500
+    lj_pair O  C1 0.521578 3.783500
+    lj_pair O  C2 0.521578 3.783500
+    lj_pair Na Na 0.418400 2.587000
+    lj_pair Na Cl 0.418400 3.494000
+    lj_pair Na C1 0.418400 3.494000
+    lj_pair Na C2 0.418400 3.494000
+    lj_pair Cl Cl 0.418400 4.401000
+    lj_pair Cl C1 0.418400 4.401000
+    lj_pair Cl C1 0.418400 4.401000
+
+# External field section
+# ----------------------
+external_field
+  type E                      # E stands for electric field
+  direction 0.00 0.00 1.00    # Vector components along x, y and z 
+  amplitude 0.00194469        # Amplitude of the field (in a.u.)
+
+# Output section
+# --------------
+output
+  default 0
+  step 1000
+  lammps 1000
+  energies 1000
+  charges  1000
+  total_charges 100
+  polarization 100
+  restart 100 alternate
