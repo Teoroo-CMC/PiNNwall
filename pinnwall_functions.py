@@ -210,11 +210,7 @@ def get_Ewald_parameters(box,rcut,rtol, ktol):
        
     Returns:
         alpha: Gaussian_width used for the Ewald summation
-        kmax: maximum number of k vectors
-       
-    Issue:
-        At the moment, the maximum number of k vectors is the same in all the directions, even though the box is not cubic.
-        The Gaussian width is derived based on Metalwall input rcut and ktol.
+        kmax: maximum number of k vectors in three directions used for the Ewald summation
     """
     
     L = box        # box dimensions
@@ -396,6 +392,12 @@ def main(args):
         # write hessian matrix file
         # Future improvement: Move the writing of the file in its own function?
         coord_check = np.float64(next(dataset().as_numpy_iterator())['coord_check']) / bohr_to_angstrom
+        
+        # Check if the number of rows is less than n_ele_check, if so add rows of zeros
+        if coord_check.shape[0] < n_elec_check:
+            num_rows_to_add = n_elec_check - coord_check.shape[0]
+            rows_to_add = np.zeros((num_rows_to_add, coord_check.shape[1]))
+            coord_check = np.vstack((coord_check, rows_to_add))
         
         fname = path_to_files + '/hessian_matrix_' + CDFT_method + '.inpt'
         # If the model list contains only one element, the matrix file is named data.inpt, otherwhise the model is specified in the file name
