@@ -274,7 +274,7 @@ def make_E(atom_rind, coord, sigma, nbatch, nmax, cell=None,
         cell  (tensor): (optional) [N, 3, 3] cell vectors
         rc     (float): (optional) cutoff for real-space summation
         eta    (float): (optional) width of auxillery Gaussian in Ewald sum
-        kmax     (int): (optional) maximum k-vectors unsed in Ewald summ
+        kmax (int or list): (optional) maximum k-vectors used in Ewald sum, can be a list of three ints
 
     Returns:
         The E matrix with the shape [nbatch, nmax, nmax]
@@ -298,7 +298,10 @@ def make_E(atom_rind, coord, sigma, nbatch, nmax, cell=None,
         ES = tf.scatter_nd(pair_rind, (erfc(rnorm*etafac)-erfc(rnorm*sigfac))/rnorm,
                            [nbatch, nmax, nmax])
         # EL: exp(-k^2eta^2/2)(cos(kr_i)cos(kr_j)+sin(kr_i)sin(kr_j))/k^2, k!=0
-        kvects = [np.arange(-kmax,kmax+1, dtype='float32') for i in range(3)]
+        if isinstance(kmax, int):
+            kmax = [kmax]*3
+        assert (len(kmax)==3) and all([isinstance(k,int) for k in kmax])
+        kvects = [np.arange(-k,k+1, dtype='float32') for k in kmax]
         kvects = tf.stack([kvec for kvec in product(*kvects) if kvec!=(0,0,0)])
         kvects = 2*pi*tf.einsum('bxc,kc->bkx', tf.linalg.inv(cell), kvects)
         knorm = tf.linalg.norm(kvects, axis=-1)
