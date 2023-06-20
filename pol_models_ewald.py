@@ -38,7 +38,8 @@ def pol_acks2_fn(tensors, params):
     alpha = - tf.linalg.einsum('bix,bij,bjy->bxy', R, chi, R)
     return {'alpha':alpha, 'chi':chi, 'eta_e': eta_e, 'chi_s': chi_s,
             'ppred':ppred[None,:,0],
-            'ipred': make_offdiag(pair_rind, tf.abs(ipred[:,0]), nbatch, nmax)}
+            'ipred': make_offdiag(pair_rind, tf.abs(ipred[:,0]), nbatch, nmax),
+            'sigma_e': sigma_e}
 
 
 @export_pol_model('pol_eem_model')
@@ -69,7 +70,7 @@ def pol_eem_fn(tensors, params):
 
     R = make_R(atom_rind, tensors['coord'], nbatch, nmax)*ang2bohr
     alpha = -tf.linalg.einsum('bix,bij,bjy->bxy', R, chi, R)
-    return {'alpha':alpha, 'egap': egap, 'chi':chi, 'eta': eta}
+    return {'alpha':alpha, 'egap': egap, 'chi':chi, 'eta': eta, 'sigma_e': sigma_e[None,:]}
 
 
 @export_pol_model('pol_etainv_model')
