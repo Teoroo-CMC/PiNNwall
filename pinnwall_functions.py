@@ -67,7 +67,6 @@ def load_data_inpt(fname):
     nions=nat-nelec
     
     atname,x,y,z = np.loadtxt(fname, skiprows=nions+nheader, max_rows=nelec, unpack=True, dtype='U')
-
     # Convert the coordinates from Bohr to Angstrom, this is becasue the prediction uses Angstrom as unit
     x = np.asfarray(x) * conversion_factor
     y = np.asfarray(y) * conversion_factor
@@ -110,6 +109,33 @@ def atomic_number(atomic_name):
         atnumber = 16
 
     return atnumber
+
+def atomic_type(atnumber):
+    """Returns the atomic name associated with the given atomic number
+
+    Args:
+       atnumber: atomic number
+
+    Returns:
+        atomic_name: atomic name corresponding to the given atomic number
+    """
+
+    if atnumber == 6:
+        atomic_name = "C"
+    elif atnumber == 7:
+        atomic_name = "N"
+    elif atnumber == 8:
+        atomic_name = "O"
+    elif atnumber == 1:
+        atomic_name = "H"
+    elif atnumber == 16:
+        atomic_name = "S"
+    elif atnumber == 17:
+        atomic_name = "S"
+    else:
+        atomic_name = "Cl"
+
+    return atomic_name
 
 def extract_external_field_info(fname):
     """ Example usage:
@@ -282,7 +308,56 @@ def check_existence(fname,data_file,runtime_file,model_list):
                 output.write("\n")
             output.write("exit\n")
             exit()
-            
+
+def get_electrode_species_name(fname):
+    with open(fname) as run:
+        for (linenum, line) in enumerate(run):
+            if (line.lstrip()).startswith("num_electrode_atoms"):
+                nelec = int(line.split()[1])
+            if (line.lstrip()).startswith("num_atoms"):
+                nat = int(line.split()[1])
+            if (line.lstrip()).startswith("# box"):
+                line2 = run.readline()
+            if (line.lstrip()).startswith("# coordinates"):
+                nheader = linenum + 2
+
+    nions=nat-nelec
+    
+    atname,x,y,z = np.loadtxt(fname, skiprows=nions+nheader, max_rows=nelec, unpack=True, dtype='U')
+    return list(set(atname))
+
+def update_gaussian_width(fname,fout, species_names, eta_dict):
+    with open(fname, 'r') as file:
+        data = file.readlines()
+    updated_data = []
+    data_iter = iter(data)
+    is_target_block = False
+    for line in data_iter:
+        line_strip = line.strip()
+        if line_strip.startswith('species_type'):
+            name_line = next(data_iter)  # Read the next line to check the name
+            name = name_line.split()[1]  # Extract the name from the line
+            if name in species_names:
+                is_target_block = True
+                updated_data.extend([line, name_line])
+            else:
+                is_target_block = False
+                updated_data.extend([line, name_line])
+        elif is_target_block:
+            if line_strip.startswith('charge gaussian'):
+                line_split = line_strip.split()
+                line_split[2] = str(eta_dict[atomic_number(name[0])])
+                updated_data.append('\t\t' + ' '.join(line_split))
+                updated_data.append('\n')  # Add an empty line after the updated line
+            else:
+                updated_data.append(line)
+        else:
+            updated_data.append(line)
+    
+    # Write the updated data to the file
+    with open(fout, 'w') as file:
+        file.writelines(updated_data)
+         
 def main(args):
     # Parse arguments
     path_to_models = args.prefix_pinn_model
@@ -306,6 +381,8 @@ def main(args):
     dataset = lambda: load_data_inpt(filelist)
     box = np.float64(next(dataset().as_numpy_iterator())['cell']) / bohr_to_angstrom
     box_volume = np.linalg.det(box)
+    
+    electrode_species = get_electrode_species_name(data_file)
     n_elec = len(next(dataset().as_numpy_iterator())['elems'])
     elec_xyz = np.float64(next(dataset().as_numpy_iterator())['coord'])[-n_elec:,:] / bohr_to_angstrom
     
@@ -363,6 +440,7 @@ def main(args):
         model_choice = os.path.join(path_to_models, '*'+CDFT_method+'*')
         
         avg_chi = []
+        avg_sigma_e = []
         for m in glob(model_choice):
             model = get_model(m)
             params = model.params.copy()
@@ -370,13 +448,27 @@ def main(args):
             model = get_model(params)
             pred = [out for out in 
                     model.predict(lambda: dataset().apply(sparse_batch(1)))]
-
+            atom_types = params['network']['params']['atom_types']
+            # atom_types = [atomic_type(a) for a in atom_types]
             for c, prediction in enumerate(pred):
                 mat_chi = prediction['chi']
                 avg_chi.append(mat_chi)
+                if CDFT_method == 'eem' or CDFT_method == 'acks2':
+                    sigma_e = prediction['sigma_e']
+                    avg_sigma_e.append(sigma_e)
 
         average_chi = np.float64(np.average(avg_chi, axis=0))
-        
+        if CDFT_method == 'eem' or CDFT_method == 'acks2':
+            average_sigma_e = np.float64(np.average(avg_sigma_e, axis=0)) # here the Unit is Angstrom
+            # convert to MW's electrode gaussian parameter, which is in 1/bohr and need to scale by 1/sqrt(2)
+            # eta = 1/(np.sqrt(2)*sigma_e/bohr_to_angstrom)
+            eta_e = 1/(np.sqrt(2)*average_sigma_e/bohr_to_angstrom)          
+            eta_e = {k: v for k, v in zip(atom_types, eta_e)}
+            
+            # update gaussian widths in the runtime file
+            update_gaussian_width(runtime_file,os.path.join(path_to_files,'runtime_'+CDFT_method+'.inpt'),
+                                  electrode_species, eta_e)
+   
         ### - to match with MW hessian matrix format
         ### BUT WHY WE DO IT HERE? GUESS WE BETTER DO IT IN PINN_CHI 
         inv_matrix = -average_chi
@@ -385,24 +477,27 @@ def main(args):
         ### only when D = 0 and using eem model can we do dipole correction 
         ### also better do it in pinn_chi becasue it is more efficient 
         ### and can avoid matrix inversion
-        if external_field_type == 'D' and CDFT_method=='eem':
-            matrix = np.linalg.inv(inv_matrix)
-            inv_matrix = np.linalg.inv(matrix + mat_constD)
+        # if external_field_type == 'D' and CDFT_method=='eem':
+        #     matrix = np.linalg.inv(inv_matrix)
+        #     inv_matrix = np.linalg.inv(matrix + mat_constD)
                 
         # write hessian matrix file
         # Future improvement: Move the writing of the file in its own function?
         coord_check = np.float64(next(dataset().as_numpy_iterator())['coord_check']) / bohr_to_angstrom
         
-        # Check if the number of rows is less than n_ele_check, if so add rows of zeros
+        # Check if the number of rows is less than n_ele_check
+        ### I am not sure about how MW handles this, so I just print a warning here
         if coord_check.shape[0] < n_elec_check:
-            num_rows_to_add = n_elec_check - coord_check.shape[0]
-            rows_to_add = np.zeros((num_rows_to_add, coord_check.shape[1]))
-            coord_check = np.vstack((coord_check, rows_to_add))
+            output.write("WARNING : The number of rows in coord_check is less than 10 \n")
+            output.write("          This may cause an error in Metalwalls \n")
+            output.write("          Please check the coord_check file \n")
+            raise SystemExit("Execution ended with error")
+
         
-        fname = path_to_files + '/hessian_matrix_' + CDFT_method + '.inpt'
+        fname = os.path.join(path_to_files, 'hessian_matrix_' + CDFT_method + '.inpt')
         # If the model list contains only one element, the matrix file is named data.inpt, otherwhise the model is specified in the file name
         if len(model_list) == 1:
-            fname = path_to_files + '/hessian_matrix.inpt'
+            fname = os.path.join(path_to_files, 'hessian_matrix.inpt')
         
         # The matrix file read by Metalwalls is a binary file
         output.write("Generate CRK file :\n")
