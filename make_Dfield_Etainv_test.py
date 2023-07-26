@@ -21,10 +21,8 @@ def make_Dfield_Etainv(Etainv, coord, cell):
 #            eta_inv  =  Ainv - ARRA/(1.+RAR[:,None,None])
             
     R = coord[2,:]
-    RR = tf.einsum('i,j->ij', R, R)
-    RRA = tf.einsum('bi,bij->bi', RR, Etainv)
     AR   = tf.einsum('bi,bij->bi', R, Etainv)
     ARRA = tf.einsum('bi,bj->bij', AR, AR) * fourpi / Omega
     RAR  = tf.einsum('bi,bi->b', R, AR) * fourpi / Omega
-    eta_inv  =  Etainv + (1- RRA/(1.+RAR[:,None,None]))
+    eta_inv  =  Etainv - ARRA/(1.+RAR[:,None,None])
     return eta_inv
