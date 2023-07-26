@@ -410,9 +410,9 @@ def make_Dfield_eta(eta, coord, cell):
             
     R = coord[:,2]
     RR = tf.einsum('i,j->ij', R, R)
-#    for i in range(len(R)):
-#        for j in range(len(R)):
-#            eta[i,j]  =  eta[i,j] + RR[i,j] * fourpi / Omega
+    for i in range(len(R)):
+        for j in range(len(R)):
+            eta[i,j]  =  eta[i,j] + RR[i,j] * fourpi / Omega
     return eta
 
 def make_diag(atom_rind, params, nbatch, nmax):
