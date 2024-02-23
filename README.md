@@ -10,7 +10,7 @@ Before prediction, one needs to have the input files of MetalWall, namely the da
 Then, clone this repo to get the scripts and the ML-models that will be used in predicting the CPK.
 
 # Synopsis
-python pinnwall [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<methodename>]] [-o <filename>]
+python pinnwall.py [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<methodename>]] [-o <filename>]
 
 Options:
 
