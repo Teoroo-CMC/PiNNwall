@@ -4,12 +4,14 @@ import os
 from ase.data import atomic_numbers
 from pinn.io.base import list_loader
 from scipy.io import FortranFile
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 from pol_models_ewald import *
 from pol_utils_ewald import *
 import time
 import math
 import re
+
+# Sets the environment to use the first GPU device for prediction, can be set to '' to run on CPU instead
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 # This is a fixed value that MW uses to check the position of the electrode atoms
 n_elec_check = 10 
@@ -18,8 +20,7 @@ bohr_to_angstrom = 0.52917721092
 # Judge if a float is zero
 is_float_zero = lambda value, tolerance=1e-6: abs(value) < tolerance
 
-# Define a datastructure for reading the data.inpt file
-### CAN I USE FLOAT64 FOR ALL THE FLOATS? 
+# Define a datastructure for reading the data.inpt file 
 ds_spec = {
     'elems': {'dtype':  tf.int32,   'shape': [None]},
     'coord': {'dtype':  tf.float32, 'shape': [None, 3]},
@@ -46,7 +47,7 @@ def load_data_inpt(fname):
     """
     
     # 1 a.u. = 0.52917721092 Angstrom
-    ### outputs all are converted to Angstron 
+    # All outputs are converted to Angstron 
     conversion_factor = 0.52917721092
     
     with open(fname) as run:
@@ -67,7 +68,7 @@ def load_data_inpt(fname):
     nions=nat-nelec
     
     atname,x,y,z = np.loadtxt(fname, skiprows=nions+nheader, max_rows=nelec, unpack=True, dtype='U')
-    # Convert the coordinates from Bohr to Angstrom, this is becasue the prediction uses Angstrom as unit
+    # Convert the coordinates from Bohr to Angstrom, since prediction uses Angstrom as unit
     x = np.asfarray(x) * conversion_factor
     y = np.asfarray(y) * conversion_factor
     z = np.asfarray(z) * conversion_factor
@@ -148,7 +149,7 @@ def extract_external_field_info(fname):
     else:
         print('External field information not found.')
     """
-    # "Read the text file and extract the relevant lines
+    # Read the text file and extract the relevant lines
     with open(fname, 'r') as file:
         lines = file.readlines()
 
@@ -274,7 +275,6 @@ def check_existence(fname,data_file,runtime_file,model_list):
     default_list = ['acks2','eem','etainv','local']
     
     if not (os.path.isfile(data_file)):
-        # fname = path_to_files + '/pinnwall.out'
         output = open(fname, 'w')
         output.write("PiNNWALL started\n\n")
         output.write("Working directory :\n")
@@ -284,7 +284,6 @@ def check_existence(fname,data_file,runtime_file,model_list):
         raise SystemExit("Execution ended with error")
         
     if not (os.path.isfile(runtime_file)):
-        # fname = path_to_files + '/pinnwall.out'
         output = open(fname, 'w')
         output.write("PiNNWALL started\n\n")
         output.write("Working directory :\n")
@@ -295,7 +294,6 @@ def check_existence(fname,data_file,runtime_file,model_list):
     
     for model in model_list:
         if not (model in default_list):
-            # fname = path_to_files + '/pinnwall.out'
             output = open(fname, 'w')
             output.write("PiNNWALL started\n\n")
             output.write("Working directory :\n")
@@ -371,7 +369,7 @@ def main(args):
         # Output is just a filename, write in the working path
         output_fname = os.path.join(path_to_files, args.output_log)
     
-    # read data.inpt and get Ewarld parameters from runtime.inpt 
+    # read data.inpt and get Ewald parameters from runtime.inpt 
     data_file = os.path.join(path_to_files,'data.inpt')
     runtime_file = os.path.join(path_to_files,'runtime.inpt')
     filelist = glob(data_file)
@@ -403,7 +401,7 @@ def main(args):
     output.write("Alpha (a.u.^-1) {0:8.3f} \n".format(1/eta))
     output.write("Number of k points in X, Y, Z {0:d}\t{1:d}\t{2:d} \n\n".format(kmax_x, kmax_y, kmax_z))
     
-    # check the type of simulation
+    # check whether simulation is run under field or external potential
     if external_field_info:
         external_field_type = external_field_info["Type"]
         external_field_direction = external_field_info["Direction"]
@@ -416,8 +414,7 @@ def main(args):
         external_field_type = 'Constant Potential'
         output.write("External field type {0:8s}\n".format(external_field_type))
     
-    ### for constant D = 0 and eem model. For other model, maybe not a good way to add this correction? 
-    ### Or better do it to the ita_e in pinn_chi, but pinn_chi doesn't know if it is constant D = 0 or not
+    ### This needs to be replaced and properly interfaced with pinn
     if external_field_type == 'D' and 'eem' in model_list:
         if is_float_zero(external_field_amplitude):
             # compute potential felt by an electrode atom due to 
@@ -469,17 +466,8 @@ def main(args):
             update_gaussian_width(runtime_file,os.path.join(path_to_files,'runtime_'+CDFT_method+'.inpt'),
                                   electrode_species, eta_e)
    
-        ### - to match with MW hessian matrix format
-        ### BUT WHY WE DO IT HERE? GUESS WE BETTER DO IT IN PINN_CHI 
+        # To match with MW hessian matrix format
         inv_matrix = -average_chi
-        # matrix = np.linalg.inv(inv_matrix)
-        # print(matrix)
-        ### only when D = 0 and using eem model can we do dipole correction 
-        ### also better do it in pinn_chi becasue it is more efficient 
-        ### and can avoid matrix inversion
-        # if external_field_type == 'D' and CDFT_method=='eem':
-        #     matrix = np.linalg.inv(inv_matrix)
-        #     inv_matrix = np.linalg.inv(matrix + mat_constD)
                 
         # write hessian matrix file
         # Future improvement: Move the writing of the file in its own function?
@@ -494,10 +482,12 @@ def main(args):
             raise SystemExit("Execution ended with error")
 
         
-        fname = os.path.join(path_to_files, 'hessian_matrix_' + CDFT_method + '.inpt')
-        # If the model list contains only one element, the matrix file is named data.inpt, otherwhise the model is specified in the file name
+        # If the model list contains only one model type, the matrix file is named data.inpt, otherwhise the model is specified in the file name
         if len(model_list) == 1:
             fname = os.path.join(path_to_files, 'hessian_matrix.inpt')
+
+        else:
+            fname = os.path.join(path_to_files, 'hessian_matrix_' + CDFT_method + '.inpt')
         
         # The matrix file read by Metalwalls is a binary file
         output.write("Generate CRK file :\n")
