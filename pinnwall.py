@@ -1,3 +1,28 @@
+""""PiNNwall runscript 
+
+This script is used to run PiNNwall through the command line. 
+It defines a description, extra information to be printed when the help flag is used, and arguments.
+Then it executes the main function from pinnwall_functions.py which runs PiNNwall.
+
+To run PiNNwall use the following command:
+
+python pinnwall [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<method_name>]] [-o <filename>]
+
+Options:
+
+`--path_pinn_model, -p  <MODEL_DIR> (default=./trained_models)`
+path to the trained pinn model
+
+`--inputs_dir, -i <WORKING_DIR> (default=./)`
+path to the input files of MW
+
+`--models, -m [<method_name>] (default=eem)`
+List of model used to compute the CRK to construct the Hessian Matrix employed by Metalwalls
+
+`--output_log, -o <filename> (default=pinnwall.out)`
+log of pinnwall, default to *inputs_dir*
+"""
+
 from pinnwall_functions import *
 import argparse
 
