@@ -1,6 +1,6 @@
 # PiNNwall
 
-PiNNwall enables the integration of a machine learned charge response kernel (CRK) predicted by PiNN[^1] with the Metalwalls MD simulation software[^2]. PiNNwall was first introduced in the following work[^4], and later upgraded through the introduction of higher-order tensorial features in PiNN[^4]. A more in-depth tutorial illustrating the application of PiNNwall to a hydroxylated electrode can be found in the *examples* part of the documentation.
+PiNNwall enables the integration of a machine learned charge response kernel (CRK) predicted by PiNN[^1] with the Metalwalls MD simulation software[^2]. PiNNwall was first introduced in the following work[^3], and later upgraded through the introduction of higher-order tensorial features in PiNN[^4]. A more in-depth tutorial illustrating the application of PiNNwall to a hydroxylated electrode can be found in the *examples* part of the documentation.
 
 ## Preparation
 
