@@ -1,3 +1,15 @@
+""""PiNNwall functions and helper functions
+
+This script contains all the helper functions used by PiNNwall as well as the main function.
+It also defines the environment variables used to run PiNNwall, 
+e.g. whether it runs on the CPU or GPU.
+
+This can be changed by adjusting the 'os.environ['CUDA_VISIBLE_DEVICES']' variable.
+
+See the individual functions for further documentation, where the most important 
+one is the main function found at the end of the file.
+"""
+
 from pinn.io import sparse_batch
 from glob import glob
 import os
