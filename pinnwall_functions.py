@@ -40,9 +40,10 @@ ds_spec = {
     'cell':   {'dtype': tf.float32, 'shape': [3, 3]},
     'coord_check': {'dtype':  tf.float64, 'shape': [None, 3]}}
 
+# Decorator to ensure compatibility with PiNN, defines the data to be a periodic structure
 @list_loader(ds_spec=ds_spec, pbc=True)
 def load_data_inpt(fname):
-    """Load the data from the Metalwalls configuration file data.inpt
+    """Load the data about the electrode from the Metalwalls configuration file data.inpt
 
     Args:
        fname: data.inpt file
@@ -54,7 +55,7 @@ def load_data_inpt(fname):
         coord_check: an array containing the position of the first ten electrode atoms
         
     Issues:
-        For now, the runtime.inpt fiel is not read. It should be added in the future to get the tolerance and cutoff to
+        For now, the runtime.inpt file is not read. It should be added in the future to get the tolerance and cutoff to
         compute the Ewald parameters, check the finite field type as well as the Gaussian width parameters
     """
     
@@ -107,7 +108,8 @@ def atomic_number(atomic_name):
         atomic_number: a list of atomic numbers corresponding to the electrode atoms
        
     Issue:
-        At the moment, I use the first string of the atomic name to get the atomic element because 1 electrode = 1 species and 1 species = 1 name, but I don't find that satisfying
+        At the moment, the first string of the atomic name to get the atomic element is used because 1 electrode = 1 species and 1 species = 1 name
+        This could cause issues in the future, if expanded to different elements
     """
     
     if atomic_name.startswith("C"):
@@ -123,6 +125,7 @@ def atomic_number(atomic_name):
 
     return atnumber
 
+### ASE already has a function like this? See if can be replaced in the future
 def atomic_type(atnumber):
     """Returns the atomic name associated with the given atomic number
 
@@ -144,14 +147,28 @@ def atomic_type(atnumber):
     elif atnumber == 16:
         atomic_name = "S"
     elif atnumber == 17:
-        atomic_name = "S"
+        atomic_name = "Cl"
     else:
         atomic_name = "Cl"
 
     return atomic_name
 
 def extract_external_field_info(fname):
-    """ Example usage:
+    """Extracts the external field information from runtime.inpt
+
+    Args:
+       fname: runtime.inpt file
+
+    Returns:
+        dict:
+            Type: Whether applied field is E or D type
+            Direction: Direction of applied field
+            Amplitude: Applied field strength
+        None:
+            returns None is external field block is not present in runtime.inpt 
+        
+    Example usage:
+
     fname = './runtime.inpt'
     info = extract_external_field_info(fname)
     if info:
@@ -206,8 +223,12 @@ def extract_external_field_info(fname):
             'Amplitude': amplitude_value
         }
     else:
+        # Return None if external field block is not defined
         return None
 
+
+### Function under construction, functionality replaced by other functions
+### Could be removed
 def load_runtime_inpt(fname):
     """Reads in the runtime file if the electric displacement is applied and in which direction
 
@@ -218,7 +239,7 @@ def load_runtime_inpt(fname):
         applied_D: a list of logical variable saying if the electric displacement is applied in the x, y and z directions respectively
        
     Issue:
-        Under construction, will go back to it after the main issues are fixed. Potential improvement: use the python interface of Metalwalls?
+        Under construction, will go back to it after the main issues are fixed.
     """
     field_param = ''
     with open(fname) as run:
@@ -245,11 +266,16 @@ def get_Ewald_parameters(box,rcut,rtol, ktol):
     Args:
        box: box dimensions
        rcut: cutoff for short-range electrostatic interactions
+       rtol: tolerance for the Ewald summation
        ktol: tolerance for the Ewald summation
        
     Returns:
         alpha: Gaussian_width used for the Ewald summation
         kmax: maximum number of k vectors in three directions used for the Ewald summation
+        kmax_x: maximum number of k vectors in x-direction
+        kmax_y: maximum number of k vectors in y-direction
+        kmax_z: maximum number of k vectors in z-direction
+        rkmax: computed rkmax
     """
     
     L = box        # box dimensions
@@ -269,11 +295,10 @@ def get_Ewald_parameters(box,rcut,rtol, ktol):
     return alpha, kmax, kmax_x, kmax_y, kmax_z, rkmax
 
 def check_existence(fname,data_file,runtime_file,model_list):
-
-    """ Check the existence of the different inputs: data.inpt file, models used
+    """Check the existence of the different inputs: data.inpt file, models used
 
     Args:
-       path_to_files: path to input (data.inpt and runtime.inpt) and output (pinnwall.out and hessian_matrix.inpt)
+       fname: output filename 
        data_file: data.inpt file
        runtime_file: runtime.inpt file
        model_list: list of model used to compute the CRK
@@ -320,6 +345,14 @@ def check_existence(fname,data_file,runtime_file,model_list):
             exit()
 
 def get_electrode_species_name(fname):
+    """Returns the names of the electrode species
+
+    Args:
+       fname: data.inpt file
+
+    Returns:
+        atname: list of names of the electrode species
+    """
     with open(fname) as run:
         for (linenum, line) in enumerate(run):
             if (line.lstrip()).startswith("num_electrode_atoms"):
@@ -337,6 +370,17 @@ def get_electrode_species_name(fname):
     return list(set(atname))
 
 def update_gaussian_width(fname,fout, species_names, eta_dict):
+    """Returns the atomic name associated with the given atomic number
+
+    Args:
+       fname: runtime.inpt file to be read
+       fout: name of updated runtime.inpt file to be written
+       species_names: names of electrode species
+       eta_dict: dictionary of eta parameters used by PiNN to predict CRK
+
+    Returns:
+        writes out updated runtime.inpt file with updated Gaussian widths
+    """
     with open(fname, 'r') as file:
         data = file.readlines()
     updated_data = []
@@ -369,8 +413,22 @@ def update_gaussian_width(fname,fout, species_names, eta_dict):
         file.writelines(updated_data)
          
 def main(args):
+    """Main PiNNwall function, reads in electrode structure and predicts CRK and creates updated runtime.inpt
+
+    Args:
+       path_pinn_model: path to the train models to be used for prediction
+       inputs_dir: path to the Metalwalls input files
+       models: list of model types to be used, e.g. ['eem'] or ['eem', 'acks2'] 
+       output_log: filename of output log file that will be written
+
+    Returns:
+        hessian_matrix.inpt: written file containing predicted charge response kernel in Metalwalls format
+        hessian_matrix.out: written file containing human-readable predicted charge response kernel
+        runtime_<method_name>.inpt: a modified version of the provided runtime.inpt file, that containing updated Gaussian width and electrostatics parameters
+        pinnwall.out: text file containing the parameters used for this run
+    """
     # Parse arguments
-    path_to_models = args.prefix_pinn_model
+    path_to_models = args.path_pinn_model
     path_to_files = args.inputs_dir
     model_list = args.models
     
@@ -494,7 +552,7 @@ def main(args):
             raise SystemExit("Execution ended with error")
 
         
-        # If the model list contains only one model type, the matrix file is named data.inpt, otherwhise the model is specified in the file name
+        # If the model list contains only one model type, the matrix file is named data.inpt, otherwise the model is specified in the filename
         if len(model_list) == 1:
             fname = os.path.join(path_to_files, 'hessian_matrix.inpt')
 
