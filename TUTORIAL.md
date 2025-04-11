@@ -8,7 +8,28 @@ In this tutorial we will use PiNNwall to predict a machine learned charge respon
 
 To get started, we will first need to have created input files for Metalwalls, namely a *data.inpt* file which contains the structure of the system, and a *runtime.inpt* which contains the simulation settings and parameters.
 
-The *data.inpt* file should also include base charges for the electrode. Depending on the electrode structure, these could directly be taken from the PiNNwall papers[^2][^3], predicted using PiNN, taken from force-field parameters or computed using a population analysis method.
+The *data.inpt* file should also include base charges for the electrode. Depending on the electrode structure, these could directly be taken from the PiNNwall papers[^2][^3], predicted using PiNN, taken from force-field parameters or computed using a population analysis method. These should be placed at the end of the *data.inpt* file, using the `# base_charges :` header, e.g.
+
+```bash
+# base_charges :
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+C1        0.0000000000000
+...
+```
+
+These should be ordered like the electrode atoms in the *data.inpt* file.
+
+You can double-check that Metalwalls is able to read these, by checking if *base charges      are provided: yes* is printed in the *run.out* file.
 
 ## Preparation
 
@@ -73,4 +94,3 @@ To be sure that Metalwalls actually uses the *hessian_matrix.inpt* file generate
 [^3]: Li, J., Knijff, L., Zhang, Z. Y., Andersson, L., & Zhang, C. (2025). PiNN: Equivariant Neural Network Suite for Modeling Electrochemical Systems. *Journal of Chemical Theory and Computation, 21*(3), 1382-1395.
 [^4]: [PiNN GitHub repository](https://github.com/Teoroo-CMC/PiNN)
 [^5]: Shao, Y., Andersson, L., Knijff, L., & Zhang, C. (2022). Finite-field coupling via learning the charge response kernel. *Electronic Structure, 4*(1), 014012.
-
