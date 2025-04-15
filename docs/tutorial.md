@@ -1,4 +1,4 @@
-# PiNNwall tutorial
+# Tutorial
 
 **NOTE:** This tutorial assumes that you are able to run Metalwalls, and know how to create Metalwalls input files. For more information on this see the [Metalwalls repository](https://gitlab.com/ampere2/metalwalls), and the [Metalwalls wiki](https://gitlab.com/ampere2/metalwalls/-/wikis/home).
 
