@@ -13,7 +13,7 @@ one is the main function found at the end of the file.
 from pinn.io import sparse_batch
 from glob import glob
 import os
-from ase.data import atomic_numbers
+#from ase.data import atomic_numbers
 from pinn.io.base import list_loader
 from scipy.io import FortranFile
 from pol_models_ewald import *
@@ -125,34 +125,6 @@ def atomic_number(atomic_name):
 
     return atnumber
 
-### ASE already has a function like this? See if can be replaced in the future
-def atomic_type(atnumber):
-    """Returns the atomic name associated with the given atomic number
-
-    Args:
-       atnumber: atomic number
-
-    Returns:
-        atomic_name: atomic name corresponding to the given atomic number
-    """
-
-    if atnumber == 6:
-        atomic_name = "C"
-    elif atnumber == 7:
-        atomic_name = "N"
-    elif atnumber == 8:
-        atomic_name = "O"
-    elif atnumber == 1:
-        atomic_name = "H"
-    elif atnumber == 16:
-        atomic_name = "S"
-    elif atnumber == 17:
-        atomic_name = "Cl"
-    else:
-        atomic_name = "Cl"
-
-    return atomic_name
-
 def extract_external_field_info(fname):
     """Extracts the external field information from runtime.inpt
 
@@ -226,9 +198,6 @@ def extract_external_field_info(fname):
         # Return None if external field block is not defined
         return None
 
-
-### Function under construction, functionality replaced by other functions
-### Could be removed
 def load_runtime_inpt(fname):
     """Reads in the runtime file if the electric displacement is applied and in which direction
 
@@ -241,11 +210,8 @@ def load_runtime_inpt(fname):
     Issue:
         Under construction, will go back to it after the main issues are fixed.
     """
-    field_param = ''
     with open(fname) as run:
         for (linenum, line) in enumerate(run):
-            # if (line.lstrip()).startswith("external_field"):
-            #     field_param = np.loadtxt(fname, skiprows=linenum+1, unpack=True, dtype='U')
             if (line.lstrip()).startswith("num_pbc"):
                 pbc = int(line.split()[1])
             if (line.lstrip()).startswith("coulomb_rtol"):
@@ -483,32 +449,16 @@ def main(args):
     else:
         external_field_type = 'Constant Potential'
         output.write("External field type {0:8s}\n".format(external_field_type))
-    
-    ### This needs to be replaced and properly interfaced with pinn
-    if external_field_type == 'D' and 'eem' in model_list:
-        if is_float_zero(external_field_amplitude):
-            # compute potential felt by an electrode atom due to 
-            # D = 0 external field (equals to dipole-correction)
-            mat_constD = np.zeros((n_elec,n_elec),  dtype=np.float64)
-            print("Constant-D = 0, no external field")
-            for i in range(n_elec):
-                for j in range(n_elec):
-                    for ixyz in range(3):
-                        if not is_float_zero(external_field_direction[ixyz]):
-                            mat_constD[i,j] += 4*math.pi / box_volume * elec_xyz[i, ixyz] * elec_xyz[j, ixyz]
-        else:
-            output.write("ERROR : None-zero constant-D is not supported \n")
-            raise SystemExit("Execution ended with error")
 
     # compute the average chi for each model
     for CDFT_method in model_list:
-        tmodel0 = time.time()
         output.write("Start model {0:8s}\n".format(CDFT_method))
         model_choice = os.path.join(path_to_models, '*'+CDFT_method+'*')
         
         avg_chi = []
         avg_sigma_e = []
         for m in glob(model_choice):
+            print(m)
             model = get_model(m)
             params = model.params.copy()
             params['model']['params'].update(ewald_rc=rcut, ewald_kmax=[kmax_x,kmax_y,kmax_z], ewald_eta=eta)
@@ -516,7 +466,6 @@ def main(args):
             pred = [out for out in 
                     model.predict(lambda: dataset().apply(sparse_batch(1)))]
             atom_types = params['network']['params']['atom_types']
-            # atom_types = [atomic_type(a) for a in atom_types]
             for c, prediction in enumerate(pred):
                 mat_chi = prediction['chi']
                 avg_chi.append(mat_chi)
@@ -528,7 +477,6 @@ def main(args):
         if CDFT_method == 'eem' or CDFT_method == 'acks2':
             average_sigma_e = np.float64(np.average(avg_sigma_e, axis=0)) # here the Unit is Angstrom
             # convert to MW's electrode gaussian parameter, which is in 1/bohr and need to scale by 1/sqrt(2)
-            # eta = 1/(np.sqrt(2)*sigma_e/bohr_to_angstrom)
             eta_e = 1/(np.sqrt(2)*average_sigma_e/bohr_to_angstrom)          
             eta_e = {k: v for k, v in zip(atom_types, eta_e)}
             
@@ -572,7 +520,6 @@ def main(args):
         f.write_record(inv_matrix.T)
         f.close()
         
-        tmodel1 = time.time()
         output.write("End model {0:8s}\n\n".format(CDFT_method))
 
     output.write("\n End of PiNNWALL")
