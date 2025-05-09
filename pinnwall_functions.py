@@ -368,8 +368,8 @@ def update_gaussian_width(fname,fout, species_names, eta_dict):
         elif is_target_block:
             if line_strip.startswith('charge gaussian'):
                 line_split = line_strip.split()
-                line_split[2] = str(eta_dict[atomic_number(name[0])])
-                updated_data.append('\t\t' + ' '.join(line_split))
+                line_split[2] = str("{:.8f}".format(eta_dict[atomic_number(name[0])]))
+                updated_data.append('    ' + ' '.join(line_split))
                 updated_data.append('\n')  # Add an empty line after the updated line
             else:
                 updated_data.append(line)
