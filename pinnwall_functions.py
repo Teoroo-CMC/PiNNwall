@@ -199,16 +199,18 @@ def extract_external_field_info(fname):
         return None
 
 def load_runtime_inpt(fname):
-    """Reads in the runtime file if the electric displacement is applied and in which direction
+    """Reads in the runtime file to extract PBC, Coulomb parmaeters and if an external field is applied and in which direction
 
     Args:
        fname: path and name of the runtime.inpt file
        
     Returns:
-        applied_D: a list of logical variable saying if the electric displacement is applied in the x, y and z directions respectively
-       
-    Issue:
-        Under construction, will go back to it after the main issues are fixed.
+        pbc: a list of logical variable saying if the electric displacement is applied in the x, y and z directions respectively
+        rcut: Coulomb_rcut defined in runtime.inpt
+        rtol: Coulomb_rtol defined in runtime.inpt
+        ktol: Coulomb_ktol defined in runtime.inpt
+        external_field_info: a dictionairy containing external field type, direction and amplitude
+
     """
     with open(fname) as run:
         for (linenum, line) in enumerate(run):
