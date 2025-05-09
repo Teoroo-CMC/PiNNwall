@@ -435,19 +435,19 @@ def main(args):
     for CDFT_method in model_list:
         output.write("{0:8s} ".format(CDFT_method))
     output.write("\n")
-    output.write("Ewald cutoff (a.u.) {0:8.3f}\n".format(rcut))
-    output.write("Alpha (a.u.^-1) {0:8.3f} \n".format(1/eta))
-    output.write("Number of k points in X, Y, Z {0:d}\t{1:d}\t{2:d} \n\n".format(kmax_x, kmax_y, kmax_z))
+    output.write("Ewald cutoff (a.u.): {0:8.3f}\n".format(rcut))
+    output.write("Alpha (a.u.^-1): {0:8.3f} \n".format(1/eta))
+    output.write("Number of k points in X, Y, Z: \t{0:d}\t{1:d}\t{2:d} \n\n".format(kmax_x, kmax_y, kmax_z))
     
     # check whether simulation is run under field or external potential
     if external_field_info:
         external_field_type = external_field_info["Type"]
         external_field_direction = external_field_info["Direction"]
         external_field_amplitude = external_field_info["Amplitude"]
-        output.write("External field type {0:8s}\n".format(external_field_type))
-        output.write("External field direction {0:8.3f}\t{1:8.3f}\t{2:8.3f}\n".format \
+        output.write("External field type: {0:8s}\n".format(external_field_type))
+        output.write("External field direction: {0:8.3f}\t{1:8.3f}\t{2:8.3f}\n".format \
                      (external_field_direction[0],external_field_direction[1],external_field_direction[2]))
-        output.write("External field amplitude {0:8.3f}\n".format(external_field_amplitude))
+        output.write("External field amplitude: {0:8.3f}\n".format(external_field_amplitude))
     else:
         external_field_type = 'Constant Potential'
         output.write("External field type {0:8s}\n".format(external_field_type))
@@ -524,5 +524,6 @@ def main(args):
         
         output.write("End model {0:8s}\n\n".format(CDFT_method))
 
-    output.write("\n End of PiNNWALL")
+    output.write("\n")
+    output.write("End of PiNNWALL")
     output.close()
