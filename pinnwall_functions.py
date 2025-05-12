@@ -452,6 +452,66 @@ def main(args):
         external_field_type = 'Constant Potential'
         output.write("External field type {0:8s}\n".format(external_field_type))
 
+    if external_field_type == 'D':
+        def make_Dfield_eta(eta, R, cell, atom_rind):
+            z = R[:,:,2:]
+            
+            Omega = tf.math.abs(tf.linalg.det(cell))
+            pi = tf.constant(np.pi)
+            pi_Omega = tf.divide(tf.multiply(4.0, pi), Omega)[:, tf.newaxis, tf.newaxis]
+            
+            A = eta
+            
+            zz = tf.einsum('bia, bja -> bij', z, z)
+            A_Dfield = A + tf.multiply(zz, pi_Omega)
+
+            return A_Dfield
+        
+        @export_pol_model('pol_eem_model')
+        def pol_eem_fn(tensors, params):
+            if params['network']['name'] == "PiNet2":
+                network = get_network(params['network'])
+                tensors = network.preprocess(tensors)
+                ppred = network(tensors)
+
+            else:
+                params['network']['params'].update({'ppred': 1, 'ipred': 0})
+                network = get_network(params['network'])
+                tensors = network.preprocess(tensors)
+                ppred, ipred = network(tensors)
+
+            # construct EEM, using trainale sigma
+            atom_rind, _ = make_indices(tensors)
+            nbatch = tf.reduce_max(atom_rind[:,0])+1
+            nmax = tf.reduce_max(atom_rind[:, 1])+1
+            sigma_a, sigma_e = make_sigma(tensors['elems'], trainable=True)
+            for i, e in enumerate(params['network']['params']['atom_types']):
+                tf.compat.v1.summary.scalar(f'sigma/{e}', sigma_e[i])
+
+            cell = tensors['cell'] if 'cell' in tensors else None
+            ewald_params = {k: params['model']['params'][f'ewald_{k}'] for k in ['kmax', 'rc', 'eta']}
+            E = make_E(atom_rind, tensors['coord'], sigma_a, nbatch, nmax, cell=cell,
+                    **ewald_params)/ang2bohr
+
+            if params['network']['name'] == "PiNet2":
+                J = make_diag(atom_rind, tf.abs(ppred), nbatch, nmax)
+
+            else:
+                J = make_diag(atom_rind, tf.abs(ppred[:,0]), nbatch, nmax)
+
+            D = make_dummy(atom_rind, nbatch, nmax)
+            eta    = E+J
+
+
+            cell = tensors['cell']*ang2bohr if 'cell' in tensors else None
+            R = make_R(atom_rind, tensors['coord'], nbatch, nmax)*ang2bohr
+            eta_corr = make_Dfield_eta(eta, R, cell, atom_rind)
+
+            etaInv_corr = tf.linalg.inv(eta_corr+D)-D
+            chi_corr    = make_lrf(etaInv_corr)
+
+            return {'chi':chi_corr, 'eta': eta_corr, 'sigma_e': sigma_e[None,:]}
+
     # compute the average chi for each model
     for CDFT_method in model_list:
         output.write("Start model {0:8s}\n".format(CDFT_method))
