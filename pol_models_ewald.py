@@ -5,10 +5,21 @@ ang2bohr = 1.88973 # convert R-> bohr, all chi, alpha should be interpreted as a
 
 @export_pol_model('pol_acks2_model')
 def pol_acks2_fn(tensors, params):
-    params['network']['params'].update({'ppred': 1, 'ipred': 1})
-    network = get_network(params['network'])
-    tensors = network.preprocess(tensors)
-    ppred, ipred = network(tensors)
+    if params['network']['name'] == "PiNet2":
+        params['network']['params'].update({'out_extra': {'i1':1,'i3':1}})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
+        ipred1 = ipred['i1']
+        ipred3 = ipred['i3']
+        i3norm = tf.einsum('aij,aij->aj',ipred3,ipred3)
+        ipred = ipred1 + tf.einsum('aij,aij->aj',ipred3,ipred3)
+
+    else:
+        params['network']['params'].update({'ppred': 1, 'ipred': 1})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
 
     # construct eta_e, this part should the same with EEM
     atom_rind, pair_rind = make_indices(tensors)
@@ -23,9 +34,11 @@ def pol_acks2_fn(tensors, params):
     ewald_params = {k: params['model']['params'][f'ewald_{k}'] for k in ['kmax', 'rc', 'eta']}
     E = make_E(atom_rind, tensors['coord'], sigma_a, nbatch, nmax, cell=cell,
                **ewald_params)/ang2bohr
-    J = make_diag(atom_rind, tf.abs(ppred[:,0]), nbatch, nmax)
+    if params['network']['name'] == "PiNet2":
+        J = make_diag(atom_rind, tf.abs(ppred), nbatch, nmax)
+    else:
+        J = make_diag(atom_rind, tf.abs(ppred[:,0]), nbatch, nmax)
     eta_e = E+J
-#    eta_e = make_Dfield_eta(eta_e, coord, cell)
 
     # construct chi_s
     chi_s = make_offdiag(pair_rind, tf.abs(ipred[:,0]), nbatch, nmax,
@@ -36,18 +49,21 @@ def pol_acks2_fn(tensors, params):
 
     R = make_R(atom_rind, tensors['coord'], nbatch, nmax)*ang2bohr
     alpha = - tf.linalg.einsum('bix,bij,bjy->bxy', R, chi, R)
-    return {'alpha':alpha, 'chi':chi, 'eta_e': eta_e, 'chi_s': chi_s,
-            'ppred':ppred[None,:,0],
-            'ipred': make_offdiag(pair_rind, tf.abs(ipred[:,0]), nbatch, nmax),
-            'sigma_e': sigma_e}
+    return {'alpha':alpha, 'chi':chi, 'eta_e': eta_e, 'chi_s': chi_s, 'sigma_e': sigma_e[None,:]}
 
 
 @export_pol_model('pol_eem_model')
 def pol_eem_fn(tensors, params):
-    params['network']['params'].update({'ppred': 1, 'ipred': 0})
-    network = get_network(params['network'])
-    tensors = network.preprocess(tensors)
-    ppred, ipred = network(tensors)
+    if params['network']['name'] == "PiNet2":
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred = network(tensors)
+
+    else:
+        params['network']['params'].update({'ppred': 1, 'ipred': 0})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
 
     # construct EEM, using trainale sigma
     atom_rind, _ = make_indices(tensors)
@@ -61,7 +77,10 @@ def pol_eem_fn(tensors, params):
     ewald_params = {k: params['model']['params'][f'ewald_{k}'] for k in ['kmax', 'rc', 'eta']}
     E = make_E(atom_rind, tensors['coord'], sigma_a, nbatch, nmax, cell=cell,
                **ewald_params)/ang2bohr
-    J = make_diag(atom_rind, tf.abs(ppred[:,0]), nbatch, nmax)
+    if params['network']['name'] == "PiNet2":
+        J = make_diag(atom_rind, tf.abs(ppred), nbatch, nmax)
+    else:
+        J = make_diag(atom_rind, tf.abs(ppred[:,0]), nbatch, nmax)
     D = make_dummy(atom_rind, nbatch, nmax)
     eta    = E+J
     etaInv = tf.linalg.inv(eta+D)-D
