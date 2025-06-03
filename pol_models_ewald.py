@@ -98,16 +98,31 @@ def pol_etainv_fn(tensors, params):
     if 'epsilon' in params['model']['params']:
         eps = params['model']['params']['epsilon']
 
-    params['network']['params'].update({'ppred': 1, 'ipred': 1})
-    network = get_network(params['network'])
-    tensors = network.preprocess(tensors)
-    ppred, ipred = network(tensors)
+    if params['network']['name'] == "PiNet2":
+        params['network']['params'].update({'out_extra': {'i1':1,'i3':1}})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
+        ipred1 = ipred['i1']
+        ipred3 = ipred['i3']
+        i3norm = tf.einsum('aij,aij->aj',ipred3,ipred3)
+        ipred = ipred1 + tf.einsum('aij,aij->aj',ipred3,ipred3)
+        
+    else:
+        params['network']['params'].update({'ppred': 1, 'ipred': 1})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
+
     atom_rind,pair_rind = make_indices(tensors)
     nbatch = tf.reduce_max(atom_rind[:,0])+1
     nmax = tf.reduce_max(atom_rind[:, 1])+1
 
     M = make_offdiag(pair_rind, ipred[:,0], nbatch, nmax,symmetric=False, invariant=False)
-    M += make_diag(atom_rind, ppred[:,0], nbatch, nmax)
+    if params['network']['name'] == "PiNet2":
+        M += make_diag(atom_rind, ppred, nbatch, nmax)
+    else:
+        M += make_diag(atom_rind, ppred[:,0], nbatch, nmax)
     etaInv = tf.einsum('aij,aik->ajk',M,M)
     etaInv += make_diag(atom_rind, tf.ones(tf.shape(atom_rind)[0]), nbatch, nmax)*eps
     egap = 1/tf.einsum('aij->a',etaInv)
@@ -116,7 +131,7 @@ def pol_etainv_fn(tensors, params):
     # chi -> alpha
     R = make_R(atom_rind, tensors['coord'], nbatch, nmax)*ang2bohr
     alpha = -tf.linalg.einsum('bix,bij,bjy->bxy', R, chi, R)
-    return {'alpha':alpha, 'egap': egap, 'chi':chi, 'M': M}
+    return {'alpha':alpha, 'egap': egap, 'chi':chi}
 
 
 @export_pol_model('pol_localchi_model')
