@@ -54,13 +54,20 @@ def get_network(network_spec):
     """
     import tensorflow as tf
     from pinn.networks.pinet import PiNet
-    from pinn.networks.pinet2 import PiNet2
     from pinn.networks.bpnn import BPNN
     from pinn.networks.lj import LJ
-    implemented_networks = {
-        'PiNetInter': PiNetInter,
-        'PiNet2': PiNet2,
-    }
+
+    try:
+        from pinn.networks.pinet2 import PiNet2
+        implemented_networks = {
+            'PiNetInter': PiNetInter,
+            'PiNet2': PiNet2,
+            }
+    except ModuleNotFoundError:
+        implemented_networks = {
+            'PiNetInter': PiNetInter,
+            }
+
     if isinstance(network_spec, tf.keras.Model):
 
         return network_spec
