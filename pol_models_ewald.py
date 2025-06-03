@@ -157,7 +157,6 @@ def pol_localchi_fn(tensors, params):
 
 @export_pol_model('pol_local_model')
 def pol_local_fn(tensors, params):
-    from tensorflow.math import unsorted_segment_sum
     def _form_triplet(tensors):
         """Returns triplet indices [ij, jk], where r_ij, r_jk < r_c"""
         p_iind = tensors['ind_2'][:, 0]
@@ -173,20 +172,38 @@ def pol_local_fn(tensors, params):
         t_ikind = tf.gather_nd(t_dense, t_index)-1
         t_ind = tf.stack([t_ijind, t_ikind], axis=1)
         return t_ind
+    
 
-    params['network']['params'].update({'ppred': 0, 'ipred': 1})
-    network = get_network(params['network'])
-    tensors = network.preprocess(tensors)
-    _, pred = network(tensors)
+    
+    if params['network']['name'] == "PiNet2":
+        params['network']['params'].update({'out_extra': {'i1':1,'i3':1}})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
+        ipred1 = ipred['i1']
+        ipred3 = ipred['i3']
+        i3norm = tf.einsum('aij,aij->aj',ipred3,ipred3)
+        ipred = ipred1 + tf.einsum('aij,aij->aj',ipred3,ipred3)
+
+    else:
+        params['network']['params'].update({'ppred': 1, 'ipred': 1})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
+
+    # params['network']['params'].update({'ppred': 0, 'ipred': 1})
+    # network = get_network(params['network'])
+    # tensors = network.preprocess(tensors)
+    # _, pred = network(tensors)
     ind1 = tensors['ind_1'][:,0]
     natoms = tf.shape(ind1)[0]
     nbatch = tf.reduce_max(ind1)+1
     ind2 = tensors['ind_2']
     diff = tensors['diff']*ang2bohr
     # tmp -> n_atoms x n_pred x 3 -> local "basis" for polarizability
-    tmp = unsorted_segment_sum(tf.einsum('pc,px->pcx', pred, diff), ind2[:,0], natoms)
+    tmp = tf.math.unsorted_segment_sum(tf.einsum('pc,px->pcx', ipred, diff), ind2[:,0], natoms)
     alpha_i = tf.einsum('pcx,pcy->pxy', tmp, tmp)
-    alpha = unsorted_segment_sum(alpha_i, ind1, nbatch)
+    alpha = tf.math.unsorted_segment_sum(alpha_i, ind1, nbatch)
     # chi is a bit more expensive to get :(
     aind = tf.cumsum(tf.ones_like(ind1))     # "absolute" pos of atom in batch
     amax = tf.shape(ind1)[0]
@@ -201,8 +218,8 @@ def pol_local_fn(tensors, params):
     ind3_i = tf.gather(ind2_i, ind3[:,0])
     ind3_j = tf.gather(ind2_j, ind3[:,0])
     ind3_k = tf.gather(ind2_j, ind3[:,1])
-    y_ij  = tf.gather(pred, ind3[:,0])
-    y_ik  = tf.gather(pred, ind3[:,1])
+    y_ij  = tf.gather(ipred, ind3[:,0])
+    y_ik  = tf.gather(ipred, ind3[:,1])
     y_ijk = tf.einsum('tc,tc->t', y_ij, y_ik)
     i_bjk = tf.stack([ind3_b, ind3_j, ind3_k], axis=1)
     i_bji = tf.stack([ind3_b, ind3_j, ind3_i], axis=1)
