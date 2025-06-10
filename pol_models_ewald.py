@@ -138,16 +138,31 @@ def pol_etainv_fn(tensors, params):
 def pol_localchi_fn(tensors, params):
     """ Similar to acks2 model, but construct chi directly instead of chi_s
     """
-    params['network']['params'].update({'ppred': 0, 'ipred': 1})
-    network = get_network(params['network'])
-    tensors = network.preprocess(tensors)
-    ppred, ipred = network(tensors)
+    if params['network']['name'] == "PiNet2":
+        params['network']['params'].update({'out_extra': {'i1':1,'i3':1}})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
+        ipred1 = ipred['i1']
+        ipred3 = ipred['i3']
+        i3norm = tf.einsum('aij,aij->aj',ipred3,ipred3)
+        ipred = ipred1 + tf.einsum('aij,aij->aj',ipred3,ipred3)
+
+    else:
+        params['network']['params'].update({'ppred': 0, 'ipred': 1})
+        network = get_network(params['network'])
+        tensors = network.preprocess(tensors)
+        ppred, ipred = network(tensors)
     atom_rind,pair_rind = make_indices(tensors)
     nbatch = tf.reduce_max(atom_rind[:,0])+1
     nmax = tf.reduce_max(atom_rind[:, 1])+1
 
     # chi -> alpha
-    chi = make_offdiag(pair_rind, tf.abs(ipred[:,0]), nbatch, nmax,
+    if params['network']['name'] == "PiNet2":
+        chi = make_offdiag(pair_rind, tf.abs(ipred), nbatch, nmax,
+                       symmetric=True, invariant=True)
+    else:
+        chi = make_offdiag(pair_rind, tf.abs(ipred[:,0]), nbatch, nmax,
                        symmetric=True, invariant=True)
 
     R = make_R(atom_rind, tensors['coord'], nbatch, nmax)*ang2bohr
