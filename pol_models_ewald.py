@@ -1,6 +1,6 @@
 from pol_utils_ewald import *
 
-ang2bohr = 1.88973 # convert R-> bohr, all chi, alpha should be interpreted as a.u.
+ang2bohr = 1.8897259886 # convert R-> bohr, all chi, alpha should be interpreted as a.u.
 
 
 @export_pol_model('pol_acks2_model')
