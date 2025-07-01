@@ -23,7 +23,7 @@ import math
 import re
 
 # Sets the environment to use the first GPU device for prediction, can be set to '' to run on CPU instead
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
 # This is a fixed value that MW uses to check the position of the electrode atoms
 n_elec_check = 10 
