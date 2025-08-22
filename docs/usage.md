@@ -1,6 +1,6 @@
 # Usage
 
-PiNNwall enables the integration of a machine learned charge response kernel (CRK) predicted by PiNN[^1] with the Metalwalls MD simulation software[^2]. PiNNwall was first introduced in the following work[^3], and later upgraded through the introduction of higher-order tensorial features in PiNN[^4]. A more in-depth tutorial illustrating the application of PiNNwall to a hydroxylated electrode can be found in the *examples* part of the documentation.
+PiNNwall enables the integration of a machine learned charge response kernel (CRK) predicted by PiNN[^1] with the Metalwalls MD simulation software[^2]. PiNNwall was first introduced in the following work[^3], and later upgraded through the introduction of higher-order tensorial features in PiNN[^4]. A more in-depth example illustrating the application of PiNNwall to a hydroxylated electrode can be found in the *tutorial* part of the documentation.
 
 ## Preparation
 
@@ -10,7 +10,7 @@ Before prediction, one needs to have constructed the input files of Metalwalls, 
 
 Then, clone this repo to get the scripts and the ML-models that will be used in predicting the CRK.
 
-After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. PiNNwall will also update the hardness, and the cutoff parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
+After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. This *hessian_matrix.inpt* file in Metalwalls traditionally contains the inverse of the hardness kernel which is analogous in concept to the CRK predicted here. Both can be used in the same way to obtain response charges on the electrode. Do note that when it comes to computing the energy, the machine learning-based energy needs to be written to be consistent. PiNNwall will also update the hardness, and the cutoff parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
 
 Note, to achieve performance consistent with the PiNNwall paper, a modified version of Metalwalls must be used. This will be made available upon request.
 
