@@ -2,7 +2,7 @@
 
 **NOTE:** This tutorial assumes that you are able to run Metalwalls, and know how to create Metalwalls input files. For more information on this see the [Metalwalls repository](https://gitlab.com/ampere2/metalwalls), and the [Metalwalls wiki](https://gitlab.com/ampere2/metalwalls/-/wikis/home).
 
-In this tutorial we will use PiNNwall to predict a machine learned charge response kernel which we will then use in Metalwalls to run MD simulations of this system. The system we will be looking at in this tutorial is that of a hydroxylated carbon electrode which was investigated in the following work[^1].
+In this tutorial we will use PiNNwall to predict a machine learned charge response kernel which we will then use in Metalwalls to run MD simulations of this system. The system we will be looking at in this tutorial is that of a hydroxylated carbon electrode which was investigated in the following work[^1]. The Metalwalls input files used for this calculation can be found in the *examples/hydroxylated_graphene* folder in this repository.
 
 ## Metalwalls files
 
