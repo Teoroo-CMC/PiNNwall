@@ -306,9 +306,10 @@ def check_existence(fname,data_file,runtime_file,model_list):
             output.write("ERROR : the following model is not supported by PiNN\n")
             output.write("{0:8s} ".format(model))
             output.write("List of models supported by PiNN:\n")
-            for CDFT_method in model_list:
+            for CDFT_method in default_list:
                 output.write("{0:8s} ".format(CDFT_method))
                 output.write("\n")
+            output.write("\n")
             output.write("exit\n")
             exit()
 
