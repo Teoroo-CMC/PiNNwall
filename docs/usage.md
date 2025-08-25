@@ -4,13 +4,13 @@ PiNNwall enables the integration of a machine learned charge response kernel (CR
 
 ## Preparation
 
-PiNNwall predicts the Hessian Matrix for Metalwalls[^2] using machine learning (ML)-models trained using PiNN[^1]. In order to run PiNNwall, one needs to have PiNN installed first.
+PiNNwall predicts the CRK for Metalwalls[^2] using machine learning (ML)-models trained using PiNN[^1]. In order to run PiNNwall, one needs to have PiNN installed first.
 
 Before prediction, one needs to have constructed the input files of Metalwalls, namely the *data.inpt* and *runtime.inpt*, which you will use to run the Metalwalls simulations. For the best performance of PiNNwall, base charges need for the electrode atoms need to be set in the *data.inpt* file. Depending on the electrode structure, these could directly be taken from the PiNNwall papers, predicted using PiNN, taken from force-field parameters or computed using a population analysis method.
 
 Then, clone this repo to get the scripts and the ML-models that will be used in predicting the CRK.
 
-After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. This *hessian_matrix.inpt* file in Metalwalls traditionally contains the inverse of the hardness kernel which is analogous in concept to the CRK predicted here. Both can be used in the same way to obtain response charges on the electrode, for more information see the PiNNwall paper[^3]. Do note that the energy does need to be correct when a machine learning-based kernel is used, this energy can be printed in Metalwalls using the *energies 1 Machine_learning_kernel* option set in *runtime.inpt*. PiNNwall will also update the hardness, and the cutoff parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
+After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. This *hessian_matrix.inpt* file in Metalwalls traditionally contains the inverse of the hardness kernel which is analogous in concept to the CRK predicted here. Both can be used in the same way to obtain response charges on the electrode, for more information see the PiNNwall paper[^3]. Do note that the energy does need to be correct when a machine learning-based kernel is used, this energy can be printed in Metalwalls using the *energies 1 Machine_learning_kernel* option set in *runtime.inpt*. PiNNwall will also update the hardness parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
 
 Note, to achieve performance consistent with the PiNNwall paper, a modified version of Metalwalls must be used. This will be made available upon request.
 
@@ -18,25 +18,25 @@ Note, to achieve performance consistent with the PiNNwall paper, a modified vers
 
 <img src="figures/PiNNwall_usage_scheme.jpg" alt="PiNNwall scheme" width="100%"/>  
 
-**Figure 1.** Flowchart of the PiNNwall input and output. 
+**Figure 1.** Flowchart of the PiNNwall input and output. The required arguments for PiNNwall are illustrated in the black rectangular boxes. The blue box contains the Metalwalls input files that need to be present in the working directory to execute PiNNwall. The red box contains the available method types for predicting the CRK.
 
 ```python
-python pinnwall.py [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m <methodename>] [-o <filename>]
+python pinnwall.py [-i <WORKING_DIR>] [-p <MODEL_DIR>] [-m <methodename>] [-o <filename>]
 ```
 
 Options:
 
-`-p  <MODEL_DIR> (./trained_models)`
-path to the trained pinn model
-
 `-i <WORKING_DIR> (./)`
 path to the input files of MW
 
+`-p  <MODEL_DIR> (./trained_models)`
+path to the trained pinn model
+
 `-m <methodename> (eem)`
-List of model used to compute the CRK to construct the Hessian Matrix employed by Metalwalls. To pass multiple model types, i.e. `-m eem local etainv acks2`
+List of model types used to compute the CRK. To pass multiple model types, i.e. `-m eem local etainv acks2`
 
 `-o <filename> (pinnwall.out)`
-log of pinnwall, default to *inputs_dir*
+log of pinnwall, defaults to *inputs_dir*
 
 Executing produces:
 
@@ -59,7 +59,7 @@ The *pinnwall.out* file will print the information about the external field that
 
 ## Suitable systems
 
-The ML-models provided with PiNNwall were trained using the QM7b dataset. This means that presently, PiNNwall is only able to predict sensible Hessian matrices for electrodes containing C, H, N, O, S, and Cl. You are encouraged to train models for different systems using the polarizability models included in the PiNN package. For this, the PiNet2 network is recommended. More information on how to do this can be found in the PiNN documentation[^5]. These models can then easily be integrated into PiNNwall by placing them into the *trained_models* folder.
+The ML-models provided with PiNNwall were trained using the QM7b dataset. This means that presently, PiNNwall is only able to predict sensible CRKs for electrodes containing C, H, N, O, S, and Cl. You are encouraged to train models for different systems using the polarizability models included in the PiNN package. For this, the PiNet2 network is recommended. More information on how to do this can be found in the PiNN documentation[^5]. These models can then easily be integrated into PiNNwall by placing them into the *trained_models* folder.
 
 We recommend that you use the EEM models for carbonaceous system as this seems to yield the most physical performance when comparing a carbon electrode to a perfect metal system. More in-depth information on the performance of all model types can be found in the PiNN papers [^3][^4].
 
