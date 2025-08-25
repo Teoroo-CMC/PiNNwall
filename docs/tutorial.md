@@ -80,7 +80,7 @@ Executing produces:
 
 - *hessian_matrix.inpt* - the predicted charge response kernel file to be used by Metalwalls
 - *hessian_matrix.out* - a human-readable version of the charge response kernel file
-- *runtime_<method_name>.inpt* - an updated version of the provided *runtime.inpt* file, which contains parameters that are consistent with those used when predicting the Hessian matrix
+- *runtime_{method_name}.inpt* - an updated version of the provided *runtime.inpt* file, which contains Gaussian width parameters that are consistent with those used when predicting the Hessian matrix
 - *pinnwall.out* - a text file containing the parameters used for this run
 
 ## Running Metalwalls

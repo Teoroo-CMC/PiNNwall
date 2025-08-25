@@ -40,8 +40,9 @@ log of pinnwall, default to *inputs_dir*
 
 Executing produces:
 
-- *hessian_matrix.inpt* - charge response kernel file to be used by Metalwalls
 - *pinnwall.out* - text file containing the parameters used for this run
+- *hessian_matrix.inpt* - charge response kernel file to be used by Metalwalls
+- *runtime_{method_name}.inpt* - an updated version of the provided *runtime.inpt* file, which contains Gaussian width parameters that are consistent with those used when predicting the Hessian matrix
 
 
 ## Simulating with Metalwalls

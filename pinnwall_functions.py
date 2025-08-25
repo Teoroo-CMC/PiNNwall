@@ -393,7 +393,7 @@ def main(args):
     Returns:
         hessian_matrix.inpt: written file containing predicted charge response kernel in Metalwalls format
         hessian_matrix.out: written file containing human-readable predicted charge response kernel
-        runtime_<method_name>.inpt: a modified version of the provided runtime.inpt file, that containing updated Gaussian width and electrostatics parameters
+        runtime_<method_name>.inpt: a modified version of the provided runtime.inpt file, that contains updated Gaussian width parameters
         pinnwall.out: text file containing the parameters used for this run
     """
     # Parse arguments
