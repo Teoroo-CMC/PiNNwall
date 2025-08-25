@@ -51,7 +51,7 @@ Now, as a final step before running PiNNwall make sure that you create a working
 Now it is finally time to execute PiNNwall. This can be done by writing the following command in the commandline:
 
 ```python
-python pinnwall.py [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<method_name>]] [-o <filename>]
+python pinnwall.py [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m <method_name>] [-o <filename>]
 ```
 
 Here,

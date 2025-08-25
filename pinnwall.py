@@ -6,7 +6,7 @@ Then it executes the main function from pinnwall_functions.py which runs PiNNwal
 
 To run PiNNwall use the following command:
 
-python pinnwall [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<method_name>]] [-o <filename>]
+python pinnwall [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m <method_name>] [-o <filename>]
 
 Options:
 
@@ -16,8 +16,8 @@ path to the trained pinn model
 `--inputs_dir, -i <WORKING_DIR> (default=./)`
 path to the input files of MW
 
-`--models, -m [<method_name>] (default=eem)`
-List of model used to compute the CRK to construct the Hessian Matrix employed by Metalwalls
+`--models, -m <method_name> (default=eem)`
+List of model used to compute the CRK to construct the Hessian Matrix employed by Metalwalls. To pass multiple model types, i.e. `-m eem local etainv acks2`
 
 `--output_log, -o <filename> (default=pinnwall.out)`
 log of pinnwall, default to *inputs_dir*
