@@ -62,8 +62,8 @@ is the path to the trained PiNN models you would like to use in prediction.
 `-i <WORKING_DIR> (./)`
 is the path to the Metalwalls input files, which will be used to read the electrode structure, and to update the parameters.
 
-`-m [<method_name>] (eem)`
-The type of models that should be used to compute the CRK to construct the Hessian Matrix which will be used by Metalwalls.
+`-m <method_name> (eem)`
+The type of models that should be used to compute the CRK to construct the Hessian Matrix which will be used by Metalwalls. To pass multiple model types, i.e. `-m eem local etainv acks2`
 
 `-o <filename> (pinnwall.out)`
 The name of the log of pinnwall containing the parameters used for this run, default to *inputs_dir/pinnwall.out*.

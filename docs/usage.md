@@ -28,8 +28,8 @@ path to the trained pinn model
 `-i <WORKING_DIR> (./)`
 path to the input files of MW
 
-`-m [<methodename>] (eem)`
-List of model used to compute the CRK to construct the Hessian Matrix employed by Metalwalls
+`-m <methodename> (eem)`
+List of model used to compute the CRK to construct the Hessian Matrix employed by Metalwalls. To pass multiple model types, i.e. `-m eem local etainv acks2`
 
 `-o <filename> (pinnwall.out)`
 log of pinnwall, default to *inputs_dir*
@@ -37,7 +37,6 @@ log of pinnwall, default to *inputs_dir*
 Executing produces:
 
 - *hessian_matrix.inpt* - charge response kernel file to be used by Metalwalls
-- *hessian_matrix.out* - human-readable charge response kernel file
 - *pinnwall.out* - text file containing the parameters used for this run
 
 ## Simulating with Metalwalls
