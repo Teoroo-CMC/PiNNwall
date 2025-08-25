@@ -10,11 +10,15 @@ Before prediction, one needs to have constructed the input files of Metalwalls, 
 
 Then, clone this repo to get the scripts and the ML-models that will be used in predicting the CRK.
 
-After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. This *hessian_matrix.inpt* file in Metalwalls traditionally contains the inverse of the hardness kernel which is analogous in concept to the CRK predicted here. Both can be used in the same way to obtain response charges on the electrode. Do note that when it comes to computing the energy, the machine learning-based energy needs to be written to be consistent. PiNNwall will also update the hardness, and the cutoff parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
+After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. This *hessian_matrix.inpt* file in Metalwalls traditionally contains the inverse of the hardness kernel which is analogous in concept to the CRK predicted here. Both can be used in the same way to obtain response charges on the electrode, for more information see the PiNNwall paper[^3]. Do note that the energy does need to be correct when a machine learning-based kernel is used, this energy can be printed in Metalwalls using the *energies 1 Machine_learning_kernel* option set in *runtime.inpt*. PiNNwall will also update the hardness, and the cutoff parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
 
 Note, to achieve performance consistent with the PiNNwall paper, a modified version of Metalwalls must be used. This will be made available upon request.
 
 ## Synopsis
+
+<img src="figures/PiNNwall_usage_scheme.jpg" alt="PiNNwall scheme" width="100%"/>  
+
+**Figure 1.** Flowchart of the PiNNwall input and output. 
 
 ```python
 python pinnwall.py [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m <methodename>] [-o <filename>]
@@ -38,6 +42,7 @@ Executing produces:
 
 - *hessian_matrix.inpt* - charge response kernel file to be used by Metalwalls
 - *pinnwall.out* - text file containing the parameters used for this run
+
 
 ## Simulating with Metalwalls
 
