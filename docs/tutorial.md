@@ -51,7 +51,7 @@ Now, as a final step before running PiNNwall make sure that you create a working
 Now it is finally time to execute PiNNwall. This can be done by writing the following command in the commandline:
 
 ```python
-python pinnwall [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<method_name>]] [-o <filename>]
+python pinnwall.py [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<method_name>]] [-o <filename>]
 ```
 
 Here,
@@ -73,7 +73,7 @@ By default, PiNNwall will be executed by the first GPU. You can also run PiNNwal
 If you would like to execute PiNNwall using the docker image, make sure to append `singularity exec pinn.sif` before this command, e.g.
 
 ```bash
-singularity exec pinn.sif python pinnwall -p ./trained_models -i ./ -m eem
+singularity exec pinn.sif python pinnwall.py -p ./trained_models -i ./ -m eem
 ```
 
 Executing produces:

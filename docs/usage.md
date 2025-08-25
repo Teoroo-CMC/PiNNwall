@@ -17,7 +17,7 @@ Note, to achieve performance consistent with the PiNNwall paper, a modified vers
 ## Synopsis
 
 ```python
-python pinnwall [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<methodename>]] [-o <filename>]
+python pinnwall.py [-p <MODEL_DIR>] [-i <WORKING_DIR>] [-m [<methodename>]] [-o <filename>]
 ```
 
 Options:
