@@ -10,7 +10,7 @@ Before prediction, one needs to have constructed the input files of Metalwalls, 
 
 Then, clone this repo to get the scripts and the ML-models that will be used in predicting the CRK.
 
-After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. This *hessian_matrix.inpt* file in Metalwalls traditionally contains the inverse of the hardness kernel which is analogous in concept to the CRK predicted here. Both can be used in the same way to obtain response charges on the electrode, for more information see the PiNNwall paper[^3]. Do note that the energy does need to be correct when a machine learning-based kernel is used, this energy can be printed in Metalwalls using the *energies 1 Machine_learning_kernel* option set in *runtime.inpt*. PiNNwall will also update the hardness parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
+After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. This *hessian_matrix.inpt* file in Metalwalls traditionally contains the inverse of the hardness kernel which is analogous in concept to the CRK predicted here. Both can be used in the same way to obtain response charges on the electrode, for more information see the PiNNwall paper[^3]. PiNNwall will also update the hardness parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
 
 Note, to achieve performance consistent with the PiNNwall paper, a modified version of Metalwalls must be used. This will be made available upon request.
 
@@ -43,6 +43,22 @@ Executing produces:
 - *pinnwall.out* - text file containing the parameters used for this run
 - *hessian_matrix.inpt* - charge response kernel file to be used by Metalwalls
 - *runtime_{method_name}.inpt* - an updated version of the provided *runtime.inpt* file, which contains Gaussian width parameters that are consistent with those used when predicting the Hessian matrix
+
+### PiNet1 or PiNet2
+PiNNwall can be used with either PiNet1 or PiNet2, this is determined by which trained models are used. The models found in the *trained_models* directory are trained with PiNet1 and are compatible with older versions of PiNN. The *trained_models_pinet2* directory contains models trained with PiNet2 which can be used with the V2.0.0 version of PiNN.
+
+### Singularity
+A very simple way to execute PiNNwall is through the use of the pre-built singularities available for PiNN.
+The models in the *trained_models_pinet2* directory are compatible with the singularity image tagged *master-{cpu/gpu}*, which can be found [here](https://hub.docker.com/r/tecatuu/pinn/tags/).
+The models in the *trained_models* directory are compatible with the singularity image tagged *v1.0.0-{cpu/gpu}*, which can be found [here](https://hub.docker.com/r/yqshao/pinn/tags/).
+The choice between the CPU and GPU version is up to the user.
+
+To execute PiNNwall using a singularity image simply download the image from docker, and execute i.e.
+
+```bash
+singularity exec pinn.sif python pinnwall.py -i ./ -p ./trained_models  -m eem
+```
+
 
 
 ## Simulating with Metalwalls
