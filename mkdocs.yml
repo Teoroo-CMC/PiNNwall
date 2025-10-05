@@ -1,0 +1,17 @@
+# the span tag provides the color-swap effect
+site_name: "PiNN<span>wall</span>" 
+# this gives the git icon 
+repo_name: teoroo-cmc/PiNNwall 
+repo_url: https://github.com/Teoroo-CMC/PiNNwall
+# the first-level labels will become tabs,
+# the second/third becomes pages or sections
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - Tutorial: tutorial.md
+
+theme:
+  name: flux 
+
+markdown_extensions:
+  - footnotes

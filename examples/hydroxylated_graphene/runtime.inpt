@@ -1,0 +1,222 @@
+# System configuration
+# Created by fftool
+# ====================
+
+# Global simulation parameters
+# ----------------------------
+num_steps   1000000
+timestep     82.682
+temperature   300.0
+
+# Periodic boundary conditions
+# ----------------------------
+num_pbc  3
+
+#velocity
+#   scale  global 1       # default global 100
+
+
+# Thermostat
+# ----------
+thermostat
+  chain_length  5
+  relaxation_time 4134.1
+  tolerance  1.0e-17
+  max_iteration  100
+
+# Ions definition
+# ---------------
+species
+
+  species_type
+    name  Hw1     
+    count     1901
+    charge point     0.417
+    mass     1.008
+
+  species_type
+    name  Ow      
+    count     1901
+    charge point    -0.834
+    mass    15.999
+
+  species_type
+    name  Hw2     
+    count     1901
+    charge point     0.417
+    mass     1.008
+
+  species_type
+    name  K       
+    count       35
+    charge point     1.000
+    mass    39.098
+
+  species_type
+    name  Cl      
+    count       35
+    charge point    -1.000
+    mass    35.453
+
+  species_type
+    name  C1      
+    count     1248
+    charge gaussian 0.44902175  0.00
+    mass    12.011
+    mobile False
+
+  species_type
+    name  O1      
+    count       40
+    charge gaussian 0.37042405  0.00
+    mass    15.999
+    mobile False
+
+  species_type
+    name  H1
+    count       40
+    charge gaussian 0.43411887  0.00
+    mass    15.999
+    mobile False
+
+  species_type
+    name  C2      
+    count     1664
+    charge gaussian 0.44902175  0.00
+    mass    12.011
+    mobile False
+
+  species_type
+    name  O2      
+    count       40
+    charge gaussian 0.37042405  0.00
+    mass    15.999
+    mobile False
+
+  species_type
+    name  H2
+    count       40
+    charge gaussian 0.43411887  0.00
+    mass    15.999
+    mobile False
+
+# Molecules definition
+# --------------------
+molecules
+
+  molecule_type
+    name  TIP3P   
+    count 1901
+    sites Hw1   Ow    Hw2  
+
+    constraints_algorithm rattle 1.0e-6 100
+    constraint Ow    Hw1    1.800
+    constraint Hw2   Ow     1.800
+    constraint Hw2   Hw1    2.847
+
+# Electrodes definition
+# ---------------------
+electrodes
+
+  electrode_type
+    name  C1      
+    species  C1      
+    potential  +0.000
+
+  electrode_type
+    name  O1      
+    species  O1      
+    potential  +0.000
+
+  electrode_type
+    name  H1
+    species  H1
+    potential  +0.000
+
+  electrode_type
+    name  C2      
+    species  C2      
+    potential  +0.000
+
+  electrode_type
+    name  O2      
+    species  O2      
+    potential  +0.000
+
+  electrode_type
+    name  H2
+    species  H2
+    potential  +0.000
+
+  electrode_charges matrix_inversion
+  charge_neutrality true global
+
+# Interactions definition
+# -----------------------
+interactions
+  coulomb
+    coulomb_rtol 1.0e-5
+    coulomb_rcut   30.210
+    coulomb_ktol 1.0e-5
+
+  lennard-jones
+    lj_rcut   30.210
+    lj_pair Hw1   Hw1     0.000000   0.0000
+    lj_pair Hw1   Ow      0.000000   0.0000
+    lj_pair Hw1   Hw2     0.000000   0.0000
+    lj_pair Hw1   K       0.000000   0.0000
+    lj_pair Hw1   Cl      0.000000   0.0000
+    lj_pair Hw1   C1      0.000000   0.0000
+    lj_pair Hw1   O1      0.000000   0.0000
+    lj_pair Hw1   C2      0.000000   0.0000
+    lj_pair Hw1   O2      0.000000   0.0000
+    lj_pair Ow    Ow      0.634386   3.1506
+    lj_pair Ow    Hw2     0.000000   0.0000
+    lj_pair Ow    K       0.716999   3.2777
+    lj_pair Ow    Cl      0.307357   3.9793
+    lj_pair Ow    C1      0.527919   3.4372
+    lj_pair Ow    O1      0.746590   3.0538
+    lj_pair Ow    C2      0.527919   3.4372
+    lj_pair Ow    O2      0.746590   3.0538
+    lj_pair Hw2   Hw2     0.000000   0.0000
+    lj_pair Hw2   K       0.000000   0.0000
+    lj_pair Hw2   Cl      0.000000   0.0000
+    lj_pair Hw2   C1      0.000000   0.0000
+    lj_pair Hw2   O1      0.000000   0.0000
+    lj_pair Hw2   C2      0.000000   0.0000
+    lj_pair Hw2   O2      0.000000   0.0000
+    lj_pair K     K       0.810369   3.4100
+    lj_pair K     Cl      0.347382   4.1399
+    lj_pair K     C1      0.596667   3.5760
+    lj_pair K     O1      0.843814   3.1770
+    lj_pair K     C2      0.596667   3.5760
+    lj_pair K     O2      0.843814   3.1770
+    lj_pair Cl    Cl      0.148913   5.0260
+    lj_pair Cl    C1      0.255774   4.3414
+    lj_pair Cl    O1      0.361719   3.8571
+    lj_pair Cl    C2      0.255774   4.3414
+    lj_pair Cl    O2      0.361719   3.8571
+    lj_pair C1    C1      0.439320   3.7500
+    lj_pair C1    O1      0.621292   3.3317
+    lj_pair C1    C2      0.439320   3.7500
+    lj_pair C1    O2      0.621292   3.3317
+    lj_pair O1    O1      0.878640   2.9600
+    lj_pair O1    C2      0.621292   3.3317
+    lj_pair O1    O2      0.878640   2.9600
+    lj_pair C2    C2      0.439320   3.7500
+    lj_pair C2    O2      0.621292   3.3317
+    lj_pair O2    O2      0.878640   2.9600
+
+output
+  step 1000
+  charges 500
+  total_charges 1
+  energies 1000
+  xyz 500
+  restart 1000000
+  density 10000 1000
+
+external_field
+  type E
+  direction 0.0 0.0 1.0
+  amplitude 0.0

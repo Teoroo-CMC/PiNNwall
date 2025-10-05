@@ -56,9 +56,18 @@ def get_network(network_spec):
     from pinn.networks.pinet import PiNet
     from pinn.networks.bpnn import BPNN
     from pinn.networks.lj import LJ
-    implemented_networks = {
-        'PiNetInter': PiNetInter,
-    }
+
+    try:
+        from pinn.networks.pinet2 import PiNet2
+        implemented_networks = {
+            'PiNetInter': PiNetInter,
+            'PiNet2': PiNet2,
+            }
+    except ModuleNotFoundError:
+        implemented_networks = {
+            'PiNetInter': PiNetInter,
+            }
+
     if isinstance(network_spec, tf.keras.Model):
 
         return network_spec
@@ -206,11 +215,11 @@ def make_indices(tensors):
 
 def make_sigma(elems,
                types=[1,6,7,8,16,17],
-#               sigma={1:0.861940863, 6:0.83333333, 7:1.054092553, 8:1.010152545, 16:1.000, 17:0.5423},#"EEM"
-#               sigma={1:0.980580676, 6:1.04257207, 7:1.221694444, 8:1.178511302, 16:1.622214211, 17:1.0054092553},#"ACKS2"
-               sigma={1:0.312, 6:0.730, 7:0.709, 8:0.661, 16:1.048, 17:1.016},#"DEFAULT"
+               # This is just an initial guess, the final sigma values will given by the trained model
+               # Units: Angstrom
+               sigma={1:0.312, 6:0.730, 7:0.709, 8:0.661, 16:1.048, 17:1.016},
                trainable=False):
-    """ Construct a element-specifc sigma array
+    """ Initial a element-specifc sigma array
 
     Sigma will be positive by construction.
 
@@ -220,7 +229,7 @@ def make_sigma(elems,
     Args:
        elems (tensor): A [N,] tensor containing the elements for each atom
        types (list): element present in the dataset
-       sigma (dict): dictionary mapping the element to the
+       sigma (dict): dictionary mapping the element to the initial sigma value
        trainable (bool): whether the sigma values are trainable
 
     Returns:
@@ -274,7 +283,7 @@ def make_E(atom_rind, coord, sigma, nbatch, nmax, cell=None,
         cell  (tensor): (optional) [N, 3, 3] cell vectors
         rc     (float): (optional) cutoff for real-space summation
         eta    (float): (optional) width of auxillery Gaussian in Ewald sum
-        kmax     (int): (optional) maximum k-vectors unsed in Ewald summ
+        kmax (int or list): (optional) maximum k-vectors used in Ewald sum, can be a list of three ints
 
     Returns:
         The E matrix with the shape [nbatch, nmax, nmax]
@@ -298,7 +307,10 @@ def make_E(atom_rind, coord, sigma, nbatch, nmax, cell=None,
         ES = tf.scatter_nd(pair_rind, (erfc(rnorm*etafac)-erfc(rnorm*sigfac))/rnorm,
                            [nbatch, nmax, nmax])
         # EL: exp(-k^2eta^2/2)(cos(kr_i)cos(kr_j)+sin(kr_i)sin(kr_j))/k^2, k!=0
-        kvects = [np.arange(-kmax,kmax+1, dtype='float32') for i in range(3)]
+        if isinstance(kmax, int):
+            kmax = [kmax]*3
+        assert (len(kmax)==3) and all([isinstance(k,int) for k in kmax])
+        kvects = [np.arange(-k,k+1, dtype='float32') for k in kmax]
         kvects = tf.stack([kvec for kvec in product(*kvects) if kvec!=(0,0,0)])
         kvects = 2*pi*tf.einsum('bxc,kc->bkx', tf.linalg.inv(cell), kvects)
         knorm = tf.linalg.norm(kvects, axis=-1)
@@ -407,9 +419,9 @@ def make_Dfield_eta(eta, coord, cell):
             
     R = coord[:,2]
     RR = tf.einsum('i,j->ij', R, R)
-#    for i in range(len(R)):
-#        for j in range(len(R)):
-#            eta[i,j]  =  eta[i,j] + RR[i,j] * fourpi / Omega
+    for i in range(len(R)):
+        for j in range(len(R)):
+            eta[i,j]  =  eta[i,j] + RR[i,j] * fourpi / Omega
     return eta
 
 def make_diag(atom_rind, params, nbatch, nmax):
