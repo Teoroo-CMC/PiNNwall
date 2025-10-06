@@ -1,6 +1,8 @@
 # PiNNwall
 
-PiNNwall enables the integration of a machine learned charge response kernel (CRK) predicted by PiNN[^1] with the Metalwalls MD simulation software[^2]. PiNNwall was first introduced in the following work[^3], and later upgraded through the introduction of higher-order tensorial features in PiNN[^4]. A more in-depth tutorial illustrating the application of PiNNwall to a hydroxylated electrode can be found in the *examples* part of the documentation.
+PiNNwall enables the integration of a machine learned charge response kernel (CRK) predicted by PiNN[^1] with the Metalwalls MD simulation software[^2]. PiNNwall was first introduced in the following work[^3], and later upgraded through the introduction of higher-order tensorial features in PiNN[^4]. 
+
+<img src="docs/figures/toc_chopped.png" alt="pinn_toc" style="height: 266px; width:360px;"/>
 
 ## Preparation
 
@@ -49,6 +51,10 @@ To start a Metalwalls simulation, ensure that you have placed the hessian_maxtri
 The ML-models provided with PiNNwall were trained using the QM7b dataset. This means that presently, PiNNwall is only able to predict sensible Hessian matrices for electrodes containing C, H, N, O, S, and Cl. You are encouraged to train models for different systems using the polarizability models included in the PiNN package. For this, the PiNet2 network is recommended. More information on how to do this can be found in the PiNN documentation[^5]. These models can then easily be integrated into PiNNwall by placing them into the *trained_models* folder.
 
 We recommend that you use the EEM models for carbonaceous system as this seems to yield the most physical performance when comparing a carbon electrode to a perfect metal system. More in-depth information on the performance of all model types can be found in the PiNN papers [^3][^4].
+
+## Tutorial and detailed usage
+
+A more in-depth tutorial illustrating the application of PiNNwall to a hydroxylated electrode can be found [here](docs/tutorial.md) and more usages beyond what is shown in this landing page can be found [here](docs/usage.md) .
 
 [^1]: [PiNN GitHub repository](https://github.com/Teoroo-CMC/PiNN)
 [^2]: [Metalwalls repository](https://gitlab.com/ampere2/metalwalls)
