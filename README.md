@@ -2,6 +2,8 @@
 
 PiNNwall enables the integration of a machine learned charge response kernel (CRK) predicted by PiNN[^1] with the Metalwalls MD simulation software[^2]. PiNNwall was first introduced in the following work[^3], and later upgraded through the introduction of higher-order tensorial features in PiNN[^4]. 
 
+<img src="docs/figures/toc_chopped.png" alt="pinn_toc" style="height: 266px; width:360px;"/>
+
 ## Preparation
 
 PiNNwall predicts the Hessian Matrix for Metalwalls[^2] using machine learning (ML)-models trained using PiNN[^1]. In order to run PiNNwall, one needs to have PiNN installed first.
