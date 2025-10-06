@@ -50,11 +50,11 @@ To start a Metalwalls simulation, ensure that you have placed the hessian_maxtri
 
 The ML-models provided with PiNNwall were trained using the QM7b dataset. This means that presently, PiNNwall is only able to predict sensible Hessian matrices for electrodes containing C, H, N, O, S, and Cl. You are encouraged to train models for different systems using the polarizability models included in the PiNN package. For this, the PiNet2 network is recommended. More information on how to do this can be found in the PiNN documentation[^5]. These models can then easily be integrated into PiNNwall by placing them into the *trained_models* folder.
 
-We recommend that you use the EEM models for carbonaceous system as this seems to yield the most physical performance when comparing a carbon electrode to a perfect metal system. More in-depth information on the performance of all model types can be found in the PiNN papers [^3][^4].
+We recommend that you use the EEM models for carbonaceous system as this seems to yield the most physical performance when comparing a carbon electrode to a perfect metal system. More information on the performance of all model types can be found in the PiNN papers [^3][^4].
 
 ## Tutorial and detailed usage
 
-A more in-depth tutorial illustrating the application of PiNNwall to a hydroxylated electrode can be found [here](docs/tutorial.md) and more usages beyond what is shown in this landing page can be found [here](docs/usage.md) .
+A more in-depth tutorial illustrating the application of PiNNwall to a hydroxylated electrode can be found [here](docs/tutorial.md) and more usages beyond what is shown on this landing page can be found [here](docs/usage.md) .
 
 [^1]: [PiNN GitHub repository](https://github.com/Teoroo-CMC/PiNN)
 [^2]: [Metalwalls repository](https://gitlab.com/ampere2/metalwalls)
