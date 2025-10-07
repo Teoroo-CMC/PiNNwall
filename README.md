@@ -8,7 +8,7 @@ PiNNwall enables the integration of a machine learned charge response kernel (CR
 
 PiNNwall predicts the "Hessian" Matrix for Metalwalls[^2] using machine learning (ML)-models trained using PiNN[^1]. In order to run PiNNwall, one needs to have PiNN installed first.
 
-Before prediction, one needs to have constructed the input files of Metalwalls, namely the *data.inpt* and *runtime.inpt*, which you will use to run the Metalwalls simulations. For the best performance of PiNNwall, base charges need for the electrode atoms need to be set in the *data.inpt* file. Depending on the electrode structure, these could directly be taken from the PiNNwall papers, predicted using PiNN, taken from force-field parameters or computed using a population analysis method.
+Before prediction, one needs to have constructed the input files of Metalwalls, namely the *data.inpt* and *runtime.inpt*, which you will use to run the Metalwalls simulations. For the best performance of PiNNwall, base charges need for the electrode atoms need to be set in the *data.inpt* file. Depending on the electrode structure, these could directly be taken from the PiNNwall papers, predicted using PiNN, taken from force-field parameters or computed using a population analysis method with DFT.
 
 Then, clone this repo to get the scripts and the ML-models that will be used in predicting the CRK.
 
