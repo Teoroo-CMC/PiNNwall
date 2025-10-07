@@ -12,7 +12,7 @@ Before prediction, one needs to have constructed the input files of Metalwalls, 
 
 Then, clone this repo to get the scripts and the ML-models that will be used in predicting the CRK.
 
-After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK. PiNNwall will also update the hardness, and the cutoff parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
+After executing PiNNwall, it will generate a *hessian_matrix.inpt* to be used by Metalwalls which contains the machine learned CRK for the given electrode model. PiNNwall will also update the hardness, and the cutoff parameters in the *runtime.inpt* to ensure that consistency between PiNN and Metalwalls necessary when using Metalwalls to run the MD simulations.
 
 Note, to achieve performance consistent with the PiNNwall paper, a modified version of Metalwalls must be used. This will be made available upon request.
 
