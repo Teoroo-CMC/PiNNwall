@@ -6,7 +6,7 @@ PiNNwall enables the integration of a machine learned charge response kernel (CR
 
 ## Preparation
 
-PiNNwall predicts the "Hessian" Matrix for Metalwalls[^2] using machine learning (ML)-models trained using PiNN[^1]. In order to run PiNNwall, one needs to have PiNN installed first.
+PiNNwall predicts the "Hessian" Matrix for Metalwalls[^2] using machine learning (ML)-models implemented in PiNN[^1]. In order to run PiNNwall, one needs to have PiNN installed first.
 
 Before prediction, one needs to have constructed the input files of Metalwalls, namely the *data.inpt* and *runtime.inpt*, which you will use to run the Metalwalls simulations. For the best performance of PiNNwall, base charges need for the electrode atoms need to be set in the *data.inpt* file. Depending on the electrode structure, these could directly be taken from the PiNNwall papers, predicted using PiNN, taken from force-field parameters or computed using a population analysis method with DFT.
 
@@ -48,7 +48,7 @@ To start a Metalwalls simulation, ensure that you have placed the hessian_maxtri
 
 ## Suitable systems
 
-The ML-models provided with PiNNwall were trained using the QM7b dataset. This means that presently, PiNNwall is only able to predict sensible Hessian matrices for electrodes containing C, H, N, O, S, and Cl. You are encouraged to train models for different systems using the polarizability models included in the PiNN package. For this, the PiNet2 network is recommended. More information on how to do this can be found in the PiNN documentation[^5]. These models can then easily be integrated into PiNNwall by placing them into the *trained_models* folder.
+The current ML-models provided with PiNNwall were trained using the QM7b dataset. This means that presently, PiNNwall is only able to predict sensible Hessian matrices for electrodes containing C, H, N, O, S, and Cl. You are encouraged to train models for different systems using the polarizability models included in the PiNN package. For this, the PiNet2 network is recommended. More information on how to do this can be found in the PiNN documentation[^5]. These models can then easily be integrated into PiNNwall by placing them into the *trained_models* folder.
 
 We recommend that you use the EEM models for carbonaceous system as this seems to yield the most physical performance when comparing a carbon electrode to a perfect metal system. More information on the performance of all model types can be found in the PiNN papers [^3][^4].
 
